@@ -1,0 +1,91 @@
+# AstraLab Schema Designing - Spring Boot JPA Database Schema
+
+This Spring Boot application implements the exact database schema specified in the ERD diagram (`svgviewer-output.svg`), covering all tables, columns, primary keys, composite keys, foreign keys, unique constraints, and relationships across both diagram pages.
+
+## Architecture & ERD Analysis
+
+The input diagram contains two logical pages embedded within the Draw.io / Mermaid specification:
+
+1. **Page 1: Data Ingestion Metadata ERD**
+   - Focuses on the core 9 ingestion tables: `WORKSPACE`, `DATASET`, `DATASET_VERSION`, `DATASET_FILE`, `DATASET_COLUMN`, `INGESTION_JOB`, `INGESTION_METRICS`, `INGESTION_STATUS_HISTORY`, and `COLUMN_PROFILE`.
+   - Represents the isolated ingestion subsystem prior to enterprise identity and tenancy integration.
+
+2. **Page 2: Full Enterprise Schema (Page-2)**
+   - Unifies and expands all 9 ingestion tables from Page 1 with Identity, Tenancy, Access Control, Tagging, and Favorites into **22 cohesive tables**.
+   - Foreign key relationships to `APP_USER` and `TENANT` normalize the `created_by`, `uploaded_by`, `submitted_by`, and `changed_by` references into relational foreign keys (`owner_user_id`, `created_by_user_id`, `uploaded_by_user_id`, `submitted_by_user_id`, `changed_by_user_id`, `tenant_id`).
+   - Adds enterprise columns (`status` on `DATASET_VERSION`, `visibility` and `deleted_at` on `DATASET`, `checksum_algorithm` on `DATASET_FILE`, `description` and `created_at` on `DATASET_COLUMN`, and `standard_deviation` on `COLUMN_PROFILE`).
+
+---
+
+## Complete Table Catalog (22 Tables)
+
+### 1. Identity & Organization
+| Table | Primary Key | Foreign Keys / Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `tenant` | `id` (VARCHAR) | - | Multi-tenant organization boundaries |
+| `team` | `id` (VARCHAR) | `tenant_id` -> `tenant(id)` | Teams within a tenant |
+| `app_user` | `id` (VARCHAR) | `tenant_id` -> `tenant(id)`, `team_id` -> `team(id)`, UK(`keycloak_id`), UK(`username`) | System users and identity |
+| `user_group` | `id` (BIGINT) | `tenant_id` -> `tenant(id)`, UK(`code`) | User permission groups |
+| `user_group_member` | `(group_id, user_id)` (Composite) | `group_id` -> `user_group(id)`, `user_id` -> `app_user(id)`, `added_by_user_id` -> `app_user(id)` | Group membership join table |
+| `workspace` | `id` (VARCHAR) | `tenant_id` -> `tenant(id)`, `created_by_user_id` -> `app_user(id)` | Workspaces within tenants |
+| `workspace_member` | `id` (BIGINT) | `workspace_id` -> `workspace(id)`, `user_id` -> `app_user(id)`, `added_by_user_id` -> `app_user(id)` | Workspace membership & roles |
+
+### 2. Dataset Catalog
+| Table | Primary Key | Foreign Keys / Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `dataset` | `id` (VARCHAR) | `workspace_id` -> `workspace(id)`, `owner_user_id` -> `app_user(id)` | Top-level datasets |
+| `dataset_version` | `id` (VARCHAR) | `dataset_id` -> `dataset(id)`, `created_by_user_id` -> `app_user(id)` | Versioned schema and revisions |
+| `dataset_file` | `id` (VARCHAR) | `dataset_version_id` -> `dataset_version(id)`, `uploaded_by_user_id` -> `app_user(id)` | Storage bucket file metadata & checksums |
+| `dataset_column` | `id` (VARCHAR) | `dataset_version_id` -> `dataset_version(id)` | Column schema definitions, data types, precision |
+
+### 3. Ingestion Execution & Profiling
+| Table | Primary Key | Foreign Keys / Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `ingestion_job` | `id` (VARCHAR) | `dataset_version_id` -> `dataset_version(id)`, `dataset_file_id` -> `dataset_file(id)`, `submitted_by_user_id` -> `app_user(id)` | Ingestion job executions and attempt tracking |
+| `ingestion_metrics` | `ingestion_job_id` (VARCHAR) | 1-to-1 with `ingestion_job(id)` (`@MapsId`) | Metrics: rows read/written/rejected, bytes, duration |
+| `ingestion_status_history`| `id` (BIGINT) | `ingestion_job_id` -> `ingestion_job(id)`, `changed_by_user_id` -> `app_user(id)` | State transitions and audit trail |
+| `column_profile` | `id` (VARCHAR) | `ingestion_job_id` -> `ingestion_job(id)`, `dataset_column_id` -> `dataset_column(id)` | Statistical profiling (nulls, distinct, min, max, mean, stddev) |
+
+### 4. Sharing, Access Control, Ownership & Tagging
+| Table | Primary Key | Foreign Keys / Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `dataset_user_access` | `id` (VARCHAR) | `dataset_id` -> `dataset(id)`, `user_id` -> `app_user(id)`, `granted_by_user_id` -> `app_user(id)` | Direct user-level access permissions |
+| `dataset_team_access` | `id` (VARCHAR) | `dataset_id` -> `dataset(id)`, `team_id` -> `team(id)`, `granted_by_user_id` -> `app_user(id)` | Team-level access permissions |
+| `dataset_group_access`| `id` (VARCHAR) | `dataset_id` -> `dataset(id)`, `group_id` -> `user_group(id)`, `granted_by_user_id` -> `app_user(id)` | Group-level access permissions |
+| `dataset_owner_history`| `id` (VARCHAR) | `dataset_id` -> `dataset(id)`, `previous_owner_user_id` -> `app_user(id)`, `new_owner_user_id` -> `app_user(id)`, `changed_by_user_id` -> `app_user(id)` | Dataset ownership transfer audit log |
+| `dataset_tag` | `id` (VARCHAR) | `tenant_id` -> `tenant(id)`, `created_by_user_id` -> `app_user(id)` | Categorization tags with color definitions |
+| `dataset_tag_mapping` | `(dataset_id, tag_id)` (Composite) | `dataset_id` -> `dataset(id)`, `tag_id` -> `dataset_tag(id)`, `assigned_by_user_id` -> `app_user(id)` | Dataset-tag mappings |
+| `user_dataset_favorite`| `(user_id, dataset_id)` (Composite) | `user_id` -> `app_user(id)`, `dataset_id` -> `dataset(id)` | User bookmarks and favorite datasets |
+
+---
+
+## Technical Stack & Configuration
+
+- **Java Version:** Java 25 (OpenJDK 25.0.3 LTS)
+- **Spring Boot:** 3.4.2
+- **Persistence:** Spring Data JPA, Hibernate ORM 6.6
+- **Database Support:** MySQL 8.0 & PostgreSQL
+- **Build Tool:** Apache Maven 3.9.9
+
+### Configuration
+- [application.properties](file:///c:/AstraLab%20Schema%20Designing/src/main/resources/application.properties): Configured for MySQL database `astralab` on port 3306 with username `root` and password `Prajwal@2005`.
+- [schema.sql](file:///c:/AstraLab%20Schema%20Designing/src/main/resources/schema.sql): PostgreSQL DDL reference.
+- [V1__initial_schema.sql](file:///c:/AstraLab%20Schema%20Designing/src/main/resources/db/migration/V1__initial_schema.sql): Flyway-compatible migration script.
+
+---
+
+## Verification & Tests
+
+```powershell
+# Set JAVA_HOME to Java 25
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-25.0.3"
+
+# Run all test suites including live MySQL verification
+mvn clean test
+```
+
+### Live MySQL Verification:
+- **Database:** `astralab` on `localhost:3306`
+- **User:** `root`
+- **Tables created and validated:** 22 out of 22 tables (`app_user`, `column_profile`, `dataset`, `dataset_column`, `dataset_file`, `dataset_group_access`, `dataset_owner_history`, `dataset_tag`, `dataset_tag_mapping`, `dataset_team_access`, `dataset_user_access`, `dataset_version`, `ingestion_job`, `ingestion_metrics`, `ingestion_status_history`, `team`, `tenant`, `user_dataset_favorite`, `user_group`, `user_group_member`, `workspace`, `workspace_member`).
+- **Tests Executed:** [`MySQLConnectionTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/MySQLConnectionTest.java) and [`SchemaMappingTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/SchemaMappingTest.java) both passed with 0 failures and 0 errors.
