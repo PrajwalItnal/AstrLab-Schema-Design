@@ -36,6 +36,9 @@ public class Dataset {
     @Column(name = "visibility", length = 50)
     private String visibility;
 
+    @Column(name = "zone", length = 50)
+    private String zone;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
@@ -136,6 +139,14 @@ public class Dataset {
 
     public void setVisibility(String visibility) {
         this.visibility = visibility;
+    }
+
+    public String getZone() {
+        return zone;
+    }
+
+    public void setZone(String zone) {
+        this.zone = zone;
     }
 
     public OffsetDateTime getCreatedAt() {

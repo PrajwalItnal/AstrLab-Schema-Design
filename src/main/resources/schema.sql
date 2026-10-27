@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS dataset (
     status VARCHAR(50),
     current_version INT,
     visibility VARCHAR(50),
+    zone VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE,
     deleted_at TIMESTAMP WITH TIME ZONE

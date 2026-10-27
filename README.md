@@ -59,17 +59,31 @@ The input diagram contains two logical pages embedded within the Draw.io / Merma
 
 ---
 
+## Dataset Management & Schema Inference APIs
+
+The application exposes REST APIs for dataset upload, persistent file storage, relational metadata registration, automated schema inference, low-memory preview streaming, and multi-criteria search.
+
+### REST Endpoints
+| HTTP Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/datasets/upload` | Multipart file upload (`.csv`, `.xlsx`, `.xls`), persistent storage, metadata registration in PostgreSQL, and automated schema inference |
+| `GET` | `/api/v1/datasets` | List and search datasets with pagination; filter by `zone`, `owner`, and `search` keyword |
+| `GET` | `/api/v1/datasets/{id}` | Retrieve dataset details, version history, storage details, and inferred schema columns |
+| `GET` | `/api/v1/datasets/{id}/preview` | Stream sample preview rows (default: 10, max: 100) directly from disk without loading the whole file into memory |
+
+---
+
 ## Technical Stack & Configuration
 
 - **Java Version:** Java 25 (OpenJDK 25.0.3 LTS)
-- **Spring Boot:** 3.4.2
-- **Persistence:** Spring Data JPA, Hibernate ORM 6.6
-- **Database Support:** MySQL 8.0 & PostgreSQL
+- **Spring Boot:** 3.4.2 (Spring MVC, Spring Data JPA, Hibernate ORM 6.6)
+- **File Parsing & Streaming:** Apache Commons CSV (1.12.0) & Apache POI (5.4.0)
+- **Database Support:** PostgreSQL & MySQL 8.0
 - **Build Tool:** Apache Maven 3.9.9
 
 ### Configuration
-- [application.properties](file:///c:/AstraLab%20Schema%20Designing/src/main/resources/application.properties): Configured for MySQL database `astralab` on port 3306 with username `root` and password `Prajwal@2005`.
-- [schema.sql](file:///c:/AstraLab%20Schema%20Designing/src/main/resources/schema.sql): PostgreSQL DDL reference.
+- [application.properties](file:///c:/AstraLab%20Schema%20Designing/src/main/resources/application.properties): Configured for PostgreSQL with persistent upload storage directory (`app.storage.upload-dir`).
+- [schema.sql](file:///c:/AstraLab%20Schema%20Designing/src/main/resources/schema.sql): PostgreSQL DDL reference including `zone` on `dataset`.
 - [V1__initial_schema.sql](file:///c:/AstraLab%20Schema%20Designing/src/main/resources/db/migration/V1__initial_schema.sql): Flyway-compatible migration script.
 
 ---
@@ -79,13 +93,14 @@ The input diagram contains two logical pages embedded within the Draw.io / Merma
 ```powershell
 # Set JAVA_HOME to Java 25
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-25.0.3"
+$env:Path = "$env:JAVA_HOME\bin;" + $env:Path
 
-# Run all test suites including live MySQL verification
+# Run all test suites
 mvn clean test
 ```
 
-### Live MySQL Verification:
-- **Database:** `astralab` on `localhost:3306`
-- **User:** `root`
-- **Tables created and validated:** 22 out of 22 tables (`app_user`, `column_profile`, `dataset`, `dataset_column`, `dataset_file`, `dataset_group_access`, `dataset_owner_history`, `dataset_tag`, `dataset_tag_mapping`, `dataset_team_access`, `dataset_user_access`, `dataset_version`, `ingestion_job`, `ingestion_metrics`, `ingestion_status_history`, `team`, `tenant`, `user_dataset_favorite`, `user_group`, `user_group_member`, `workspace`, `workspace_member`).
-- **Tests Executed:** [`MySQLConnectionTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/MySQLConnectionTest.java) and [`SchemaMappingTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/SchemaMappingTest.java) both passed with 0 failures and 0 errors.
+### Test Suites (11/11 Passed):
+- [`MySQLConnectionTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/MySQLConnectionTest.java): Verifies connection and existence of all 22 schema tables.
+- [`SchemaMappingTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/SchemaMappingTest.java): Verifies Hibernate entity metamodel and JPA mappings against H2 (PostgreSQL dialect).
+- [`SchemaInferenceServiceTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/service/SchemaInferenceServiceTest.java): Verifies column type detection (Integer, Decimal, Boolean, Date, DateTime, String), nullability, fallback on mixed types, and stream row sampling.
+- [`DatasetControllerIntegrationTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/controller/DatasetControllerIntegrationTest.java): End-to-end integration tests for multipart file upload, schema generation, sample row preview, filtering by zone and owner, keyword search, and 400/404 error responses.

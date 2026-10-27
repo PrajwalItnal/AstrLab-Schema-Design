@@ -31,3 +31,7 @@ target/
 
 ### Logs ###
 *.log
+
+### Uploads & Persistent Storage ###
+data/
+uploads/
