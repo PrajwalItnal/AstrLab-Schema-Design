@@ -471,7 +471,7 @@ public class SchemaInferenceService {
             }
 
             if (dateTimeCount == nonEmptyCount) {
-                return new InferredType("DateTime", "TIMESTAMP WITH TIME ZONE", detectedDateFormat);
+                return new InferredType("DateTime", "DATETIME", detectedDateFormat);
             }
 
             if (dateCount == nonEmptyCount) {
