@@ -32,6 +32,12 @@ target/
 ### Logs ###
 *.log
 
-### Uploads & Persistent Storage ###
+### Uploads, Dummy Data & Local Test Artifacts ###
 data/
 uploads/
+*.csv
+*.xlsx
+*.xls
+*.dump
+*.dumpstream
+

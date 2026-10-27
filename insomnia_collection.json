@@ -1,0 +1,351 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-10-27T22:40:00.000Z",
+  "__export_source": "insomnia.desktop.app:v8.6.1",
+  "resources": [
+    {
+      "_id": "wrk_astralab_dataset_api",
+      "parentId": null,
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "name": "AstraLab Dataset Metadata & Schema API",
+      "description": "Insomnia test suite for AstraLab DatasetController endpoints: upload, schema inference, preview streaming, and multi-criteria search.",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_astralab_base",
+      "parentId": "wrk_astralab_dataset_api",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8081",
+        "dataset_customer_id": "ds_customers_demo",
+        "dataset_orders_id": "ds_ecommerce_orders",
+        "dataset_telemetry_id": "ds_sensor_telemetry"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "dataset_customer_id",
+          "dataset_orders_id",
+          "dataset_telemetry_id"
+        ]
+      },
+      "color": "#6366f1",
+      "isPrivate": false,
+      "metaSortKey": 1745793600000,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_dataset_management",
+      "parentId": "wrk_astralab_dataset_api",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "name": "1. Dataset Catalog Endpoints",
+      "description": "Endpoints to list, filter, search, preview, and inspect datasets.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -100,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_list_all_datasets",
+      "parentId": "fld_dataset_management",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets",
+      "name": "1. List All Datasets (Paginated)",
+      "description": "Lists all datasets with pagination (page=0, size=20, sort=createdAt,desc).",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "page",
+          "value": "0",
+          "disabled": false
+        },
+        {
+          "name": "size",
+          "value": "10",
+          "disabled": false
+        },
+        {
+          "name": "sort",
+          "value": "createdAt,desc",
+          "disabled": false
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -100,
+      "isPrivate": false,
+      "_type": "request"
+    },
+    {
+      "_id": "req_filter_by_zone_gold",
+      "parentId": "fld_dataset_management",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets",
+      "name": "2. Filter Datasets by Zone (gold)",
+      "description": "Filters datasets belonging to the 'gold' data zone.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "zone",
+          "value": "gold",
+          "disabled": false
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -90,
+      "isPrivate": false,
+      "_type": "request"
+    },
+    {
+      "_id": "req_filter_by_owner",
+      "parentId": "fld_dataset_management",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets",
+      "name": "3. Filter Datasets by Owner (sarah_analyst)",
+      "description": "Filters datasets owned by sarah_analyst.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "owner",
+          "value": "sarah_analyst",
+          "disabled": false
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -80,
+      "isPrivate": false,
+      "_type": "request"
+    },
+    {
+      "_id": "req_search_keyword",
+      "parentId": "fld_dataset_management",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets",
+      "name": "4. Search Datasets (Keyword: Telemetry)",
+      "description": "Searches dataset name or description matching 'Telemetry'.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "search",
+          "value": "Telemetry",
+          "disabled": false
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -70,
+      "isPrivate": false,
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_dataset_detail_customers",
+      "parentId": "fld_dataset_management",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets/{{ _.dataset_customer_id }}",
+      "name": "5. Get Dataset Detail by ID (Customers Demo)",
+      "description": "Retrieves comprehensive metadata and inferred columns schema for ds_customers_demo.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -60,
+      "isPrivate": false,
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_dataset_detail_telemetry",
+      "parentId": "fld_dataset_management",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets/{{ _.dataset_telemetry_id }}",
+      "name": "6. Get Dataset Detail by ID (Sensor Telemetry)",
+      "description": "Retrieves comprehensive metadata and inferred columns schema for ds_sensor_telemetry.",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -50,
+      "isPrivate": false,
+      "_type": "request"
+    },
+    {
+      "_id": "req_preview_rows_customers",
+      "parentId": "fld_dataset_management",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets/{{ _.dataset_customer_id }}/preview",
+      "name": "7. Preview Dataset Rows (Customers - 5 rows)",
+      "description": "Streams sample rows directly from the stored persistent CSV file on disk.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "5",
+          "disabled": false
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -40,
+      "isPrivate": false,
+      "_type": "request"
+    },
+    {
+      "_id": "req_preview_rows_telemetry",
+      "parentId": "fld_dataset_management",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets/{{ _.dataset_telemetry_id }}/preview",
+      "name": "8. Preview Dataset Rows (Telemetry - 10 rows)",
+      "description": "Streams sample rows for IoT telemetry dataset.",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "value": "10",
+          "disabled": false
+        }
+      ],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -30,
+      "isPrivate": false,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_dataset_upload",
+      "parentId": "wrk_astralab_dataset_api",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "name": "2. Dataset Upload & Ingestion",
+      "description": "Multipart dataset ingestion endpoint.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 0,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_upload_new_dataset",
+      "parentId": "fld_dataset_upload",
+      "modified": 1745793600000,
+      "created": 1745793600000,
+      "url": "{{ _.base_url }}/api/v1/datasets/upload",
+      "name": "9. Upload Dataset (Multipart Form-Data)",
+      "description": "Upload a new CSV/Excel dataset file. Automatically streams to storage, infers schema, and registers metadata in PostgreSQL/MySQL.",
+      "method": "POST",
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "name": "file",
+            "type": "file",
+            "description": "Select sample CSV file from data/samples/sample_ecommerce_orders.csv",
+            "fileName": "data/samples/sample_ecommerce_orders.csv"
+          },
+          {
+            "name": "name",
+            "value": "Retail Store Sales Q4",
+            "type": "text",
+            "disabled": false
+          },
+          {
+            "name": "description",
+            "value": "Q4 retail sales ledger uploaded from Insomnia test suite",
+            "type": "text",
+            "disabled": false
+          },
+          {
+            "name": "zone",
+            "value": "silver",
+            "type": "text",
+            "disabled": false
+          },
+          {
+            "name": "owner",
+            "value": "insomnia_tester",
+            "type": "text",
+            "disabled": false
+          },
+          {
+            "name": "workspaceId",
+            "value": "ws_finance",
+            "type": "text",
+            "disabled": false
+          }
+        ]
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 10,
+      "isPrivate": false,
+      "_type": "request"
+    }
+  ]
+}

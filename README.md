@@ -104,3 +104,43 @@ mvn clean test
 - [`SchemaMappingTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/SchemaMappingTest.java): Verifies Hibernate entity metamodel and JPA mappings against H2 (PostgreSQL dialect).
 - [`SchemaInferenceServiceTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/service/SchemaInferenceServiceTest.java): Verifies column type detection (Integer, Decimal, Boolean, Date, DateTime, String), nullability, fallback on mixed types, and stream row sampling.
 - [`DatasetControllerIntegrationTest`](file:///c:/AstraLab%20Schema%20Designing/src/test/java/com/astralab/schema/controller/DatasetControllerIntegrationTest.java): End-to-end integration tests for multipart file upload, schema generation, sample row preview, filtering by zone and owner, keyword search, and 400/404 error responses.
+
+---
+
+## Insomnia Testing & Dummy Data Guide
+
+A comprehensive Insomnia collection and automatic dummy data seeder are included for immediate testing of all `DatasetController` endpoints without manual setup.
+
+### 1. Preloaded Datasets & Sample Files
+On application startup, [`DatasetDummyDataInitializer`](file:///c:/AstraLab%20Schema%20Designing/src/main/java/com/astralab/schema/config/DatasetDummyDataInitializer.java) seeds 3 realistic datasets with auto-inferred columns and writes their physical CSV files to disk:
+
+| Dataset ID | Name | Zone | Owner | Workspace | Sample File |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `ds_customers_demo` | Global Customer Demographics | `gold` | `sarah_analyst` | `ws_analytics` | `customers_demo.csv` |
+| `ds_ecommerce_orders` | E-Commerce Transaction Stream | `silver` | `david_finance` | `ws_finance` | `ecommerce_orders.csv` |
+| `ds_sensor_telemetry` | Factory IoT Edge Telemetry | `landing` | `alex_engineer` | `ws_iot_platform` | `sensor_telemetry.csv` |
+
+Sample files for testing manual multipart file uploads are located in [`data/samples/`](file:///c:/AstraLab%20Schema%20Designing/data/samples):
+- `data/samples/sample_customers.csv`
+- `data/samples/sample_ecommerce_orders.csv`
+- `data/samples/sample_iot_telemetry.csv`
+
+### 2. Importing into Insomnia
+1. Open **Insomnia**.
+2. Click **Preferences / Settings** or the **Collection Menu** -> **Import / Export**.
+3. Select **Import Data** -> **From File**.
+4. Choose [`insomnia_collection.json`](file:///c:/AstraLab%20Schema%20Designing/insomnia_collection.json) (or `insomnia_astralab_collection.json`).
+5. The workspace **"AstraLab Dataset Metadata & Schema API"** will be created with pre-configured environment variables:
+   - `base_url`: `http://localhost:8081`
+   - `dataset_customer_id`: `ds_customers_demo`
+   - `dataset_orders_id`: `ds_ecommerce_orders`
+   - `dataset_telemetry_id`: `ds_sensor_telemetry`
+
+### 3. Running the Server
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-25.0.3"
+$env:Path = "$env:JAVA_HOME\bin;" + $env:Path
+mvn spring-boot:run
+```
+Once the server is running on port 8081, execute the 9 preconfigured requests directly in Insomnia.
+
